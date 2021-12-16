@@ -3,8 +3,6 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.utils import ChromeType
 import selenium.common.exceptions
 
 import time
@@ -25,6 +23,8 @@ TEST_PRODUCT_IDS = [
     '144043', # Combina frigorifica Beko
 ]
 CSV_DIR = './shared_dir/flanco_csv/'
+WAIT_ELEMENT_TIMEOUT = 10 # seconds
+WAIT_SELENIUM_TIMEOUT = 10 # seconds
 
 class MaxCSVEntryReached(ValueError):
     pass
@@ -32,7 +32,7 @@ class MaxCSVEntryReached(ValueError):
 
 def getArgumentParser():
     parser = argparse.ArgumentParser(description='Start scraping Flanco in one of a few modes of operation')
-    parser.add_argument("--verbose", "-v", action="store_true")
+    parser.add_argument("--verbose", "-v", action='count', default=0)
     parser.add_argument("--max-entries", "-m", action="store", type=int, help="The maximum amount of CSV entries that this script will write before exiting")
 
     subparsers = parser.add_subparsers(dest="subparser_name", help="The kind of run mode")
@@ -82,17 +82,8 @@ def getBrowserDriver(selenium_host):
     op.add_argument("--headless") # run without GUI
     op.add_argument('--blink-settings=imagesEnabled=false') # don't load images
 
-    # driver = webdriver.Chrome(service_log_path=os.path.join(os.getcwd(), "browser_service_log.txt"), options=op)
-    # driver = webdriver.Chrome(options=op)
-
-    # service = Service(ChromeDriverManager().install())
-    # service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
-    # driver = webdriver.Chrome(service=service, 
-    #                           service_log_path=os.path.join(os.getcwd(), "browser_service_log.txt"), 
-    #                           options=op)>
-
     url = f"http://{selenium_host}:4444/wd/hub"
-    if args.verbose: print(f"Attempting to connect to selenium browser at URL = {url}")
+    if args.verbose >= 1: print(f"Attempting to connect to selenium browser at URL = {url}")
     driver = webdriver.Remote(command_executor=url, options=op)
 
     return driver
@@ -127,29 +118,28 @@ def getPricesFromPriceBox(priceBox):
 
 def waitForElement(driver, cssSelector):
     try:
-        WebDriverWait(driver, 50).until(lambda driver: findElement(driver, cssSelector) is not None)
+        WebDriverWait(driver, WAIT_ELEMENT_TIMEOUT).until(lambda driver: findElement(driver, cssSelector) is not None)
     except selenium.common.exceptions.TimeoutException:
         raise ValueError(f"Timed-out while waiting for element with css-selector: {cssSelector}")
 
-def addPriceEntryToCSV(driver, csv_dir, prod_id, unreduced_price, curr_price):
+def addPriceEntryToCSV(csv_dir, prod_id, unreduced_price, curr_price, prod_url):
     if args.max_entries is not None and addPriceEntryToCSV.count >= args.max_entries:
         raise MaxCSVEntryReached(f"Already reached maximum amount of CSV entries({args.max_entries})")
     addPriceEntryToCSV.count = addPriceEntryToCSV.count + 1
 
     curr_date = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-    curr_url = driver.current_url
 
-    if args.verbose:
+    if args.verbose >= 2:
         print("prod_id =", prod_id)
         print("unreduced_price =", unreduced_price)
         print("curr_price =", curr_price)
         print("curr_date =", curr_date)
-        print("curr_url =", curr_url)
+        print("curr_url =", prod_url)
         print()
 
     with open(os.path.join(csv_dir, f"product{prod_id}.csv"), mode='a') as csv_file:
         price_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        price_writer.writerow([str(prod_id), curr_date, unreduced_price, curr_price, curr_url])
+        price_writer.writerow([str(prod_id), curr_date, unreduced_price, curr_price, prod_url])
 addPriceEntryToCSV.count = 0
 
 def savePriceForList(driver, site_url, csv_dir, product_ids):
@@ -161,7 +151,6 @@ def savePriceForList(driver, site_url, csv_dir, product_ids):
         search_field = driver.find_element(By.ID, "searchingfield")
         search_field.send_keys(prod_id)
         search_field.send_keys(Keys.ENTER)
-
 
         # get product price
         price_box_css = "div.product-info-price div.price-box"
@@ -177,11 +166,12 @@ def savePriceForList(driver, site_url, csv_dir, product_ids):
         curr_price = priceTuple[1].text
         curr_price = ''.join(c for c in curr_price if c.isdigit() or c in [',', '.'])
 
-        addPriceEntryToCSV(driver, csv_dir, prod_id, unreduced_price, curr_price)
+        # write to CSV
+        addPriceEntryToCSV(csv_dir, prod_id, unreduced_price, curr_price, driver.current_url)
 
 def savePriceForCategory(driver, site_url, csv_dir, category_url):
     url = urllib.parse.urljoin(site_url, category_url)
-    if args.verbose: print(f"Scraping category at {url}")
+    if args.verbose >= 1: print(f"Scraping category at {url}")
     driver.get(url)
     
     pageNumber = 1
@@ -190,7 +180,7 @@ def savePriceForCategory(driver, site_url, csv_dir, category_url):
         waitForElement(driver, product_box_css)
 
         product_boxes = driver.find_elements(By.CSS_SELECTOR, product_box_css)
-        if args.verbose: print(f"Found {len(product_boxes)} products on page {pageNumber}")
+        if args.verbose >= 1: print(f"Found {len(product_boxes)} products on page {pageNumber}")
         
         print()
         for prod_box in product_boxes:
@@ -214,8 +204,13 @@ def savePriceForCategory(driver, site_url, csv_dir, category_url):
             curr_price = priceTuple[1].text
             curr_price = ''.join(c for c in curr_price if c.isdigit() or c in [',', '.'])
 
+            # get product url
+            anchor = findElement(prod_box, "a.product-item-link")
+            assert anchor is not None
+            prod_url = anchor.get_attribute("href");
+
             # write to CSV
-            addPriceEntryToCSV(driver, csv_dir, prod_id, unreduced_price, curr_price)
+            addPriceEntryToCSV(csv_dir, prod_id, unreduced_price, curr_price, prod_url)
 
         nextButton = findElement(driver, "a.action.next:not(.mobile-filter-container a)")
         if nextButton is None:
@@ -232,10 +227,6 @@ def startScraping(selenium_host):
     driver = getBrowserDriver(selenium_host)
     print(f"Got driver on host:{selenium_host}")
     print()
-
-    # driver.get('https://hoopshype.com/salaries/players/')
-    # print(len(driver.find_elements(By.CSS_SELECTOR, "td.name")))
-    # return
 
     try:
         if not os.path.exists(csv_dir):
@@ -258,10 +249,10 @@ if __name__ == "__main__":
 
     global args
     args = getArgumentParser().parse_args()
-    if args.verbose: print(args); print()
+    if args.verbose >= 1: print(args); print()
 
     selenium_host = os.environ.get("SELENIUM_HOST", "localhost")
-    waitForSeleniumContainer(selenium_host=selenium_host, timeout=10)
+    waitForSeleniumContainer(selenium_host=selenium_host, timeout=WAIT_SELENIUM_TIMEOUT)
     startScraping(selenium_host)
 
 
