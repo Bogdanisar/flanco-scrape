@@ -26,10 +26,14 @@ TEST_PRODUCT_IDS = [
 ]
 CSV_DIR = './shared_dir/flanco_csv/'
 
+class MaxCSVEntryReached(ValueError):
+    pass
+
 
 def getArgumentParser():
     parser = argparse.ArgumentParser(description='Start scraping Flanco in one of a few modes of operation')
     parser.add_argument("--verbose", "-v", action="store_true")
+    parser.add_argument("--max-entries", "-m", action="store", type=int, help="The maximum amount of CSV entries that this script will write before exiting")
 
     subparsers = parser.add_subparsers(dest="subparser_name", help="The kind of run mode")
     subparsers.required = True
@@ -128,6 +132,10 @@ def waitForElement(driver, cssSelector):
         raise ValueError(f"Timed-out while waiting for element with css-selector: {cssSelector}")
 
 def addPriceEntryToCSV(driver, csv_dir, prod_id, unreduced_price, curr_price):
+    if args.max_entries is not None and addPriceEntryToCSV.count >= args.max_entries:
+        raise MaxCSVEntryReached(f"Already reached maximum amount of CSV entries({args.max_entries})")
+    addPriceEntryToCSV.count = addPriceEntryToCSV.count + 1
+
     curr_date = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     curr_url = driver.current_url
 
@@ -142,6 +150,7 @@ def addPriceEntryToCSV(driver, csv_dir, prod_id, unreduced_price, curr_price):
     with open(os.path.join(csv_dir, f"product{prod_id}.csv"), mode='a') as csv_file:
         price_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         price_writer.writerow([str(prod_id), curr_date, unreduced_price, curr_price, curr_url])
+addPriceEntryToCSV.count = 0
 
 def savePriceForList(driver, site_url, csv_dir, product_ids):
     driver.get(site_url)
@@ -185,7 +194,7 @@ def savePriceForCategory(driver, site_url, csv_dir, category_url):
         
         print()
         for prod_box in product_boxes:
-            
+
             # get product id
             prod_id_html_attribute = "data-product-sku"
             prod_id_element = prod_box.find_element(By.CSS_SELECTOR, f"*[{prod_id_html_attribute}]")
@@ -238,6 +247,8 @@ def startScraping(selenium_host):
             savePriceForList(driver, flanco_url, csv_dir, args.products)
         elif args.subparser_name == "category":
             savePriceForCategory(driver, flanco_url, csv_dir, args.category_url)
+    except MaxCSVEntryReached as e:
+        print("Stopping because:", str(e))
     finally:
         driver.quit()
 
