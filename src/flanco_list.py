@@ -175,38 +175,45 @@ def savePriceForCategory(driver, site_url, csv_dir, category_url):
     if args.verbose: print(f"Scraping category at {url}")
     driver.get(url)
     
-    product_box_css = "li.product-item"
-    waitForElement(driver, product_box_css)
+    pageNumber = 1
+    while True:
+        product_box_css = "li.product-item"
+        waitForElement(driver, product_box_css)
 
-    product_boxes = driver.find_elements(By.CSS_SELECTOR, product_box_css)
-    if args.verbose: print(f"Found {len(product_boxes)} products on current page")
-    
-    print()
-    for prod_box in product_boxes:
+        product_boxes = driver.find_elements(By.CSS_SELECTOR, product_box_css)
+        if args.verbose: print(f"Found {len(product_boxes)} products on page {pageNumber}")
+        
+        print()
+        for prod_box in product_boxes:
+            
+            # get product id
+            prod_id_html_attribute = "data-product-sku"
+            prod_id_element = prod_box.find_element(By.CSS_SELECTOR, f"*[{prod_id_html_attribute}]")
+            assert prod_id_element is not None
+            prod_id = prod_id_element.get_attribute(prod_id_html_attribute)
 
-        # get product id
-        prod_id_html_attribute = "data-product-sku"
-        prod_id_element = prod_box.find_element(By.CSS_SELECTOR, f"*[{prod_id_html_attribute}]")
-        assert prod_id_element is not None
-        prod_id = prod_id_element.get_attribute(prod_id_html_attribute)
+            # get price
+            price_box_css = "div.price-box"
+            priceBox = findElement(prod_box, price_box_css)
+            assert priceBox is not None
 
-        # get price
-        price_box_css = "div.price-box"
-        priceBox = findElement(prod_box, price_box_css)
-        assert priceBox is not None
+            priceTuple = getPricesFromPriceBox(priceBox)
+            assert priceTuple is not None
 
-        priceTuple = getPricesFromPriceBox(priceBox)
-        assert priceTuple is not None
+            unreduced_price = priceTuple[0].text
+            unreduced_price = ''.join(c for c in unreduced_price if c.isdigit() or c in [',', '.'])
+            curr_price = priceTuple[1].text
+            curr_price = ''.join(c for c in curr_price if c.isdigit() or c in [',', '.'])
 
-        unreduced_price = priceTuple[0].text
-        unreduced_price = ''.join(c for c in unreduced_price if c.isdigit() or c in [',', '.'])
-        curr_price = priceTuple[1].text
-        curr_price = ''.join(c for c in curr_price if c.isdigit() or c in [',', '.'])
+            # write to CSV
+            addPriceEntryToCSV(driver, csv_dir, prod_id, unreduced_price, curr_price)
 
-        # write to CSV
-        addPriceEntryToCSV(driver, csv_dir, prod_id, unreduced_price, curr_price)
-
-    # TODO press next
+        nextButton = findElement(driver, "a.action.next:not(.mobile-filter-container a)")
+        if nextButton is None:
+            break
+        
+        driver.execute_script("arguments[0].click();", nextButton)
+        pageNumber = pageNumber + 1
 
 def startScraping(selenium_host):
     flanco_url = os.environ.get("FLANCO_URL", "https://www.flanco.ro/")
