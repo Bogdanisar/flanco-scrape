@@ -1,0 +1,16 @@
+version: "3.3"
+services:
+  flanco:
+    build: .
+    depends_on:
+      - selenium-chrome
+    volumes:
+      - flanco_csv:/app/flanco_csv
+    # command: tail -F /dev/null
+    tty: true
+  selenium-chrome:
+    image: "selenium/standalone-chrome"
+    ports:
+      - 4444:4444
+volumes:
+  flanco_csv:

@@ -1,0 +1,405 @@
+[1639647264.586][INFO]: Starting ChromeDriver 96.0.4664.110 (d5ef0e8214bc14c9b5bbf69a1515e431394c62a6-refs/branch-heads/4664@{#1283}) on port 38027
+[1639647264.586][INFO]: Please see https://chromedriver.chromium.org/security-considerations for suggestions on keeping ChromeDriver safe.
+[1639647264.973][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND InitSession {
+   "capabilities": {
+      "alwaysMatch": {
+         "browserName": "chrome",
+         "goog:chromeOptions": {
+            "args": [ "--headless", "--blink-settings=imagesEnabled=false" ],
+            "extensions": [  ]
+         },
+         "pageLoadStrategy": "normal"
+      },
+      "firstMatch": [ {
+
+      } ]
+   },
+   "desiredCapabilities": {
+      "browserName": "chrome",
+      "goog:chromeOptions": {
+         "args": [ "--headless", "--blink-settings=imagesEnabled=false" ],
+         "extensions": [  ]
+      },
+      "pageLoadStrategy": "normal"
+   }
+}
+[1639647264.974][INFO]: Populating Preferences file: {
+   "alternate_error_pages": {
+      "enabled": false
+   },
+   "autofill": {
+      "enabled": false
+   },
+   "browser": {
+      "check_default_browser": false
+   },
+   "distribution": {
+      "import_bookmarks": false,
+      "import_history": false,
+      "import_search_engine": false,
+      "make_chrome_default_for_user": false,
+      "skip_first_run_ui": true
+   },
+   "dns_prefetching": {
+      "enabled": false
+   },
+   "profile": {
+      "content_settings": {
+         "pattern_pairs": {
+            "https://*,*": {
+               "media-stream": {
+                  "audio": "Default",
+                  "video": "Default"
+               }
+            }
+         }
+      },
+      "default_content_setting_values": {
+         "geolocation": 1
+      },
+      "default_content_settings": {
+         "geolocation": 1,
+         "mouselock": 1,
+         "notifications": 1,
+         "popups": 1,
+         "ppapi-broker": 1
+      },
+      "password_manager_enabled": false
+   },
+   "safebrowsing": {
+      "enabled": false
+   },
+   "search": {
+      "suggest_enabled": false
+   },
+   "translate": {
+      "enabled": false
+   }
+}
+[1639647264.974][INFO]: Populating Local State file: {
+   "background_mode": {
+      "enabled": false
+   },
+   "ssl": {
+      "rev_checking": {
+         "enabled": false
+      }
+   }
+}
+[1639647264.974][INFO]: Launching chrome: /snap/chromium/1854/usr/lib/chromium-browser/chrome --allow-pre-commit-input --blink-settings=imagesEnabled=false --disable-background-networking --disable-client-side-phishing-detection --disable-default-apps --disable-hang-monitor --disable-popup-blocking --disable-prompt-on-repost --disable-sync --enable-automation --enable-blink-features=ShadowDOMV0 --enable-logging --headless --log-level=0 --no-first-run --no-service-autorun --password-store=basic --remote-debugging-port=0 --test-type=webdriver --use-mock-keychain --user-data-dir=/tmp/.org.chromium.Chromium.1C5YlI data:,
+[1639647265.082][INFO]: resolved localhost to ["127.0.0.1"]
+[1639647265.099][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE InitSession {
+   "capabilities": {
+      "acceptInsecureCerts": false,
+      "browserName": "chrome",
+      "browserVersion": "96.0.4664.110",
+      "chrome": {
+         "chromedriverVersion": "96.0.4664.110 (d5ef0e8214bc14c9b5bbf69a1515e431394c62a6-refs/branch-heads/4664@{#1283})",
+         "userDataDir": "/tmp/.org.chromium.Chromium.1C5YlI"
+      },
+      "goog:chromeOptions": {
+         "debuggerAddress": "localhost:35203"
+      },
+      "networkConnectionEnabled": false,
+      "pageLoadStrategy": "normal",
+      "platformName": "linux",
+      "proxy": {
+
+      },
+      "setWindowRect": true,
+      "strictFileInteractability": false,
+      "timeouts": {
+         "implicit": 0,
+         "pageLoad": 300000,
+         "script": 30000
+      },
+      "unhandledPromptBehavior": "dismiss and notify",
+      "webauthn:extension:credBlob": true,
+      "webauthn:extension:largeBlob": true,
+      "webauthn:virtualAuthenticators": true
+   },
+   "sessionId": "de3bb626125002c3a17a33c59584cbd4"
+}
+[1639647265.101][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND Navigate {
+   "url": "https://www.flanco.ro/"
+}
+[1639647265.101][INFO]: Waiting for pending navigations...
+[1639647265.102][INFO]: Done waiting for pending navigations. Status: ok
+[1639647265.168][INFO]: Waiting for pending navigations...
+[1639647266.614][INFO]: Done waiting for pending navigations. Status: ok
+[1639647266.614][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE Navigate
+[1639647266.615][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND FindElement {
+   "using": "css selector",
+   "value": "[id=\"searchingfield\"]"
+}
+[1639647266.615][INFO]: Waiting for pending navigations...
+[1639647266.620][INFO]: Done waiting for pending navigations. Status: ok
+[1639647266.630][INFO]: Waiting for pending navigations...
+[1639647266.633][INFO]: Done waiting for pending navigations. Status: ok
+[1639647266.633][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE FindElement {
+   "element-6066-11e4-a52e-4f735466cecf": "3e25bdbe-7ae5-4042-ae06-2d5a33ea9ab4"
+}
+[1639647266.635][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND TypeElement {
+   "id": "3e25bdbe-7ae5-4042-ae06-2d5a33ea9ab4",
+   "text": "147719",
+   "value": [ "1", "4", "7", "7", "1", "9" ]
+}
+[1639647266.635][INFO]: Waiting for pending navigations...
+[1639647266.636][INFO]: Done waiting for pending navigations. Status: ok
+[1639647266.774][INFO]: Waiting for pending navigations...
+[1639647266.793][INFO]: Done waiting for pending navigations. Status: ok
+[1639647266.793][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE TypeElement
+[1639647266.796][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND TypeElement {
+   "id": "3e25bdbe-7ae5-4042-ae06-2d5a33ea9ab4",
+   "text": "",
+   "value": [ "" ]
+}
+[1639647266.796][INFO]: Waiting for pending navigations...
+[1639647266.824][INFO]: Done waiting for pending navigations. Status: ok
+[1639647266.875][INFO]: Waiting for pending navigations...
+[1639647268.665][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.665][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE TypeElement
+[1639647268.666][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND FindElement {
+   "using": "css selector",
+   "value": "div.product-info-price div.price-box .singlePrice span.price"
+}
+[1639647268.666][INFO]: Waiting for pending navigations...
+[1639647268.670][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.701][INFO]: Waiting for pending navigations...
+[1639647268.710][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.710][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE FindElement ERROR no such element: Unable to locate element: {"method":"css selector","selector":"div.product-info-price div.price-box .singlePrice span.price"}
+  (Session info: headless chrome=96.0.4664.110)
+[1639647268.712][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND FindElement {
+   "using": "css selector",
+   "value": "div.product-info-price div.price-box div.pricesPrp .special-price span.price"
+}
+[1639647268.712][INFO]: Waiting for pending navigations...
+[1639647268.748][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.776][INFO]: Waiting for pending navigations...
+[1639647268.833][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.834][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE FindElement {
+   "element-6066-11e4-a52e-4f735466cecf": "cd5daf1d-09f8-4db9-ab84-1afab6f8f208"
+}
+[1639647268.835][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND FindElement {
+   "using": "css selector",
+   "value": "div.product-info-price div.price-box .singlePrice span.price"
+}
+[1639647268.835][INFO]: Waiting for pending navigations...
+[1639647268.859][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.892][INFO]: Waiting for pending navigations...
+[1639647268.914][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.914][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE FindElement ERROR no such element: Unable to locate element: {"method":"css selector","selector":"div.product-info-price div.price-box .singlePrice span.price"}
+  (Session info: headless chrome=96.0.4664.110)
+[1639647268.915][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND FindElement {
+   "using": "css selector",
+   "value": "div.product-info-price div.price-box div.pricesPrp .special-price span.price"
+}
+[1639647268.915][INFO]: Waiting for pending navigations...
+[1639647268.923][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.930][INFO]: Waiting for pending navigations...
+[1639647268.933][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.933][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE FindElement {
+   "element-6066-11e4-a52e-4f735466cecf": "cd5daf1d-09f8-4db9-ab84-1afab6f8f208"
+}
+[1639647268.935][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND GetElementText {
+   "id": "cd5daf1d-09f8-4db9-ab84-1afab6f8f208"
+}
+[1639647268.935][INFO]: Waiting for pending navigations...
+[1639647268.936][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.948][INFO]: Waiting for pending navigations...
+[1639647268.953][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.953][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE GetElementText "1.649,99 lei"
+[1639647268.955][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND GetUrl {
+
+}
+[1639647268.955][INFO]: Waiting for pending navigations...
+[1639647268.971][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.975][INFO]: Waiting for pending navigations...
+[1639647268.978][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.978][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE GetUrl "https://www.flanco.ro/trotineta-electrica-blaupunkt-esc808edition-motor-350w-viteza-max-25km-h-autonomie-max-20-km-pliabila-geanta-transport-inclusa-alb.html"
+[1639647268.980][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND GetElementText {
+   "id": "cd5daf1d-09f8-4db9-ab84-1afab6f8f208"
+}
+[1639647268.980][INFO]: Waiting for pending navigations...
+[1639647268.983][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.990][INFO]: Waiting for pending navigations...
+[1639647268.991][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.991][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE GetElementText "1.649,99 lei"
+[1639647268.993][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND FindElement {
+   "using": "css selector",
+   "value": "[id=\"searchingfield\"]"
+}
+[1639647268.993][INFO]: Waiting for pending navigations...
+[1639647268.994][INFO]: Done waiting for pending navigations. Status: ok
+[1639647268.999][INFO]: Waiting for pending navigations...
+[1639647269.001][INFO]: Done waiting for pending navigations. Status: ok
+[1639647269.001][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE FindElement {
+   "element-6066-11e4-a52e-4f735466cecf": "54adf3bd-34b5-4ae6-bd22-6d84d43e3b47"
+}
+[1639647269.002][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND TypeElement {
+   "id": "54adf3bd-34b5-4ae6-bd22-6d84d43e3b47",
+   "text": "143800",
+   "value": [ "1", "4", "3", "8", "0", "0" ]
+}
+[1639647269.002][INFO]: Waiting for pending navigations...
+[1639647269.004][INFO]: Done waiting for pending navigations. Status: ok
+[1639647269.051][INFO]: Waiting for pending navigations...
+[1639647269.052][INFO]: Done waiting for pending navigations. Status: ok
+[1639647269.052][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE TypeElement
+[1639647269.053][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND TypeElement {
+   "id": "54adf3bd-34b5-4ae6-bd22-6d84d43e3b47",
+   "text": "",
+   "value": [ "" ]
+}
+[1639647269.053][INFO]: Waiting for pending navigations...
+[1639647269.055][INFO]: Done waiting for pending navigations. Status: ok
+[1639647269.071][INFO]: Waiting for pending navigations...
+[1639647271.690][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.690][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE TypeElement
+[1639647271.691][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND FindElement {
+   "using": "css selector",
+   "value": "div.product-info-price div.price-box .singlePrice span.price"
+}
+[1639647271.691][INFO]: Waiting for pending navigations...
+[1639647271.696][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.712][INFO]: Waiting for pending navigations...
+[1639647271.714][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.714][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE FindElement ERROR no such element: Unable to locate element: {"method":"css selector","selector":"div.product-info-price div.price-box .singlePrice span.price"}
+  (Session info: headless chrome=96.0.4664.110)
+[1639647271.715][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND FindElement {
+   "using": "css selector",
+   "value": "div.product-info-price div.price-box div.pricesPrp .special-price span.price"
+}
+[1639647271.715][INFO]: Waiting for pending navigations...
+[1639647271.719][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.723][INFO]: Waiting for pending navigations...
+[1639647271.724][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.724][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE FindElement {
+   "element-6066-11e4-a52e-4f735466cecf": "4fc5769b-0c51-4c91-9eac-b4ccb55c0bd0"
+}
+[1639647271.725][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND FindElement {
+   "using": "css selector",
+   "value": "div.product-info-price div.price-box .singlePrice span.price"
+}
+[1639647271.725][INFO]: Waiting for pending navigations...
+[1639647271.727][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.732][INFO]: Waiting for pending navigations...
+[1639647271.733][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.733][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE FindElement ERROR no such element: Unable to locate element: {"method":"css selector","selector":"div.product-info-price div.price-box .singlePrice span.price"}
+  (Session info: headless chrome=96.0.4664.110)
+[1639647271.734][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND FindElement {
+   "using": "css selector",
+   "value": "div.product-info-price div.price-box div.pricesPrp .special-price span.price"
+}
+[1639647271.734][INFO]: Waiting for pending navigations...
+[1639647271.735][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.739][INFO]: Waiting for pending navigations...
+[1639647271.740][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.740][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE FindElement {
+   "element-6066-11e4-a52e-4f735466cecf": "4fc5769b-0c51-4c91-9eac-b4ccb55c0bd0"
+}
+[1639647271.741][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND GetElementText {
+   "id": "4fc5769b-0c51-4c91-9eac-b4ccb55c0bd0"
+}
+[1639647271.741][INFO]: Waiting for pending navigations...
+[1639647271.742][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.752][INFO]: Waiting for pending navigations...
+[1639647271.753][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.753][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE GetElementText "1.299,99 lei"
+[1639647271.755][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND GetUrl {
+
+}
+[1639647271.755][INFO]: Waiting for pending navigations...
+[1639647271.756][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.757][INFO]: Waiting for pending navigations...
+[1639647271.759][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.759][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE GetUrl "https://www.flanco.ro/combina-frigorifica-arctic-ak54270m30w-262-l-clasa-f.html"
+[1639647271.761][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND GetElementText {
+   "id": "4fc5769b-0c51-4c91-9eac-b4ccb55c0bd0"
+}
+[1639647271.761][INFO]: Waiting for pending navigations...
+[1639647271.768][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.772][INFO]: Waiting for pending navigations...
+[1639647271.773][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.773][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE GetElementText "1.299,99 lei"
+[1639647271.775][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND FindElement {
+   "using": "css selector",
+   "value": "[id=\"searchingfield\"]"
+}
+[1639647271.775][INFO]: Waiting for pending navigations...
+[1639647271.777][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.782][INFO]: Waiting for pending navigations...
+[1639647271.783][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.783][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE FindElement {
+   "element-6066-11e4-a52e-4f735466cecf": "adfebcec-cb82-46b7-a565-8e936844ed81"
+}
+[1639647271.785][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND TypeElement {
+   "id": "adfebcec-cb82-46b7-a565-8e936844ed81",
+   "text": "144043",
+   "value": [ "1", "4", "4", "0", "4", "3" ]
+}
+[1639647271.785][INFO]: Waiting for pending navigations...
+[1639647271.786][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.830][INFO]: Waiting for pending navigations...
+[1639647271.831][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.832][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE TypeElement
+[1639647271.833][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND TypeElement {
+   "id": "adfebcec-cb82-46b7-a565-8e936844ed81",
+   "text": "",
+   "value": [ "" ]
+}
+[1639647271.833][INFO]: Waiting for pending navigations...
+[1639647271.834][INFO]: Done waiting for pending navigations. Status: ok
+[1639647271.855][INFO]: Waiting for pending navigations...
+[1639647274.502][INFO]: Done waiting for pending navigations. Status: ok
+[1639647274.503][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE TypeElement
+[1639647274.505][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND FindElement {
+   "using": "css selector",
+   "value": "div.product-info-price div.price-box .singlePrice span.price"
+}
+[1639647274.505][INFO]: Waiting for pending navigations...
+[1639647274.525][INFO]: Done waiting for pending navigations. Status: ok
+[1639647274.532][INFO]: Waiting for pending navigations...
+[1639647274.545][INFO]: Done waiting for pending navigations. Status: ok
+[1639647274.545][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE FindElement {
+   "element-6066-11e4-a52e-4f735466cecf": "5d0af032-562a-4468-a138-44096499dd65"
+}
+[1639647274.547][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND FindElement {
+   "using": "css selector",
+   "value": "div.product-info-price div.price-box .singlePrice span.price"
+}
+[1639647274.547][INFO]: Waiting for pending navigations...
+[1639647274.563][INFO]: Done waiting for pending navigations. Status: ok
+[1639647274.583][INFO]: Waiting for pending navigations...
+[1639647274.599][INFO]: Done waiting for pending navigations. Status: ok
+[1639647274.599][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE FindElement {
+   "element-6066-11e4-a52e-4f735466cecf": "5d0af032-562a-4468-a138-44096499dd65"
+}
+[1639647274.601][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND GetElementText {
+   "id": "5d0af032-562a-4468-a138-44096499dd65"
+}
+[1639647274.601][INFO]: Waiting for pending navigations...
+[1639647274.639][INFO]: Done waiting for pending navigations. Status: ok
+[1639647274.670][INFO]: Waiting for pending navigations...
+[1639647274.707][INFO]: Done waiting for pending navigations. Status: ok
+[1639647274.707][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE GetElementText "4.099,99 lei"
+[1639647274.708][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND GetUrl {
+
+}
+[1639647274.709][INFO]: Waiting for pending navigations...
+[1639647274.719][INFO]: Done waiting for pending navigations. Status: ok
+[1639647274.726][INFO]: Waiting for pending navigations...
+[1639647274.740][INFO]: Done waiting for pending navigations. Status: ok
+[1639647274.741][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE GetUrl "https://www.flanco.ro/combina-frigorifica-beko-rcne720e30dxpn-neo-frost-586-l-clasa-f.html"
+[1639647274.742][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND GetElementText {
+   "id": "5d0af032-562a-4468-a138-44096499dd65"
+}
+[1639647274.742][INFO]: Waiting for pending navigations...
+[1639647274.762][INFO]: Done waiting for pending navigations. Status: ok
+[1639647274.785][INFO]: Waiting for pending navigations...
+[1639647274.805][INFO]: Done waiting for pending navigations. Status: ok
+[1639647274.805][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE GetElementText "4.099,99 lei"
+[1639647274.808][INFO]: [de3bb626125002c3a17a33c59584cbd4] COMMAND CloseWindow {
+
+}
+[1639647274.918][INFO]: [de3bb626125002c3a17a33c59584cbd4] RESPONSE CloseWindow [  ]
