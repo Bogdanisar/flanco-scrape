@@ -7,15 +7,16 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.utils import ChromeType
 import selenium.common.exceptions
 
-from time import sleep
+import time
 import sys
 import csv
 import os
 import os.path
 import datetime
+import requests
+import json
 
 
-FLANCO_URL = 'https://www.flanco.ro/'
 PRODUCT_IDS = [
     '147719', # Trotineta electrica Blaupunkt
     '143800', # Combina frigorifica Arctic
@@ -24,7 +25,7 @@ PRODUCT_IDS = [
 CSV_DIR = 'flanco_csv'
 
 
-def getBrowserDriver():
+def getBrowserDriver(selenium_host):
     op = webdriver.ChromeOptions()
     op.add_argument('--no-sandbox')
     op.add_argument('--disable-dev-shm-usage')
@@ -41,7 +42,9 @@ def getBrowserDriver():
     #                           options=op)>
 
     # driver = webdriver.Remote("http://127.0.0.1:4444/wd/hub", DesiredCapabilities.CHROME)
-    driver = webdriver.Remote(command_executor="http://selenium-chrome:4444/wd/hub", options=op)
+    url = f"http://{selenium_host}:4444/wd/hub"
+    print(f"url = {url}")
+    driver = webdriver.Remote(command_executor=url, options=op)
     # driver = webdriver.Remote(command_executor="http://127.0.0.1:4444/wd/hub", desired_capabilities=op.to_capabilities())
     # driver = webdriver.Remote(command_executor="http://127.0.0.1:4444/wd/hub", desired_capabilities={'browserName': 'chrome'}, options=op)
 
@@ -65,11 +68,14 @@ def waitForElement(driver, cssSelectors):
     except selenium.common.exceptions.TimeoutException:
         raise ValueError(f"Timed-out while waiting for element with any css-selector: {cssSelectors}")
 
-def savePrice(site_url, product_ids, csv_dir):
-    driver = getBrowserDriver()
+def savePrice(selenium_host, site_url, product_ids, csv_dir):
+    print(f"Getting driver on host:{selenium_host}")
+    driver = getBrowserDriver(selenium_host)
+    print(f"Got driver on host:{selenium_host}")
 
     # driver.get('https://hoopshype.com/salaries/players/')
     # print(len(driver.find_elements(By.CSS_SELECTOR, "td.name")))
+    # return
 
     try:
         driver.get(site_url)
@@ -110,15 +116,40 @@ def savePrice(site_url, product_ids, csv_dir):
                 price_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 price_writer.writerow([str(prod_id), str(price), curr_date, curr_url])
     finally:
-        driver.close()
+        driver.quit()
     
+def is_selenium_container_ready(host):
+    try:
+        req = requests.get(f"http://{host}:4444/wd/hub/status")
+        return json.loads(req.text)['value']['ready']
+    except:
+        return False
+
+def wait_until(condition, *args, interval=0.1, timeout=1):
+    start = time.time()
+    while time.time() - start < timeout:
+        if condition(*args):
+            return True
+        time.sleep(interval)
+    
+    return False
+
 
 if __name__ == "__main__":
     script_directory = os.path.dirname(os.path.realpath(__file__))
     os.chdir(script_directory)
 
-    sleep(8) # for the browser to startup
+    selenium_host = os.environ.get("SELENIUM_HOST", "localhost")
+    timeout = 10
 
-    savePrice(FLANCO_URL, PRODUCT_IDS, os.path.join(script_directory, CSV_DIR))
+    print(f"Waiting for selenium host: {selenium_host}...")
+    if not wait_until(is_selenium_container_ready, selenium_host, timeout=timeout):
+        print(f"Timed-out after {timeout} seconds while waiting for host({selenium_host}). Abort...")
+        sys.exit(-1)
+    print(f"Host({selenium_host}) is up!")
+
+    flanco_url = os.environ.get("FLANCO_URL", "https://www.flanco.ro/")
+
+    savePrice(selenium_host, flanco_url, PRODUCT_IDS, os.path.join(script_directory, CSV_DIR))
 
 

@@ -6,6 +6,10 @@ services:
       - selenium-chrome
     volumes:
       - flanco_csv:/app/flanco_csv
+    environment:
+      - SELENIUM_HOST=selenium-chrome
+      - FLANCO_URL=https://www.flanco.ro/
+
     # command: tail -F /dev/null
     tty: true
   selenium-chrome:
