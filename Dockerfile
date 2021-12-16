@@ -34,5 +34,5 @@ COPY ./src /app
 
 
 # CMD ["/bin/bash", "/app/start.sh"]
-CMD ["python3", "/app/flanco_list.py"]
+# CMD ["python3", "/app/flanco_list.py"]
 # CMD 

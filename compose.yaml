@@ -4,17 +4,15 @@ services:
     build: .
     depends_on:
       - selenium-chrome
+    tty: true
     volumes:
-      - flanco_csv:/app/flanco_csv
+      - flanco_scrape:/app/shared_dir
     environment:
       - SELENIUM_HOST=selenium-chrome
       - FLANCO_URL=https://www.flanco.ro/
-
-    # command: tail -F /dev/null
-    tty: true
   selenium-chrome:
     image: "selenium/standalone-chrome"
     ports:
       - 4444:4444
 volumes:
-  flanco_csv:
+  flanco_scrape:
