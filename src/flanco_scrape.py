@@ -57,9 +57,9 @@ def getArgumentParser():
     return parser
 
 
-def is_selenium_container_ready(host):
+def is_selenium_container_ready(host, port):
     try:
-        req = requests.get(f"http://{host}:4444/wd/hub/status")
+        req = requests.get(f"http://{host}:{port}/wd/hub/status")
         return json.loads(req.text)['value']['ready']
     except:
         return False
@@ -73,23 +73,23 @@ def wait_until(condition, *args, interval=0.1, timeout=1):
     
     return False
 
-def waitForSeleniumContainer(selenium_host, timeout):
+def waitForSeleniumContainer(selenium_host, selenium_port, timeout):
     print(f"Waiting for selenium host: {selenium_host} for {timeout} seconds...")
-    if not wait_until(is_selenium_container_ready, selenium_host, timeout=timeout):
+    if not wait_until(is_selenium_container_ready, selenium_host, selenium_port, timeout=timeout):
         print(f"Timed-out after {timeout} seconds while waiting for host({selenium_host}). Abort...")
         sys.exit(-1)
     print(f"Host({selenium_host}) is up!")
     print()
 
 
-def getBrowserDriver(selenium_host):
+def getBrowserDriver(selenium_host, selenium_port):
     op = webdriver.ChromeOptions()
     op.add_argument('--no-sandbox')
     op.add_argument('--disable-dev-shm-usage')
     op.add_argument("--headless") # run without GUI
     op.add_argument('--blink-settings=imagesEnabled=false') # don't load images
 
-    url = f"http://{selenium_host}:4444/wd/hub"
+    url = f"http://{selenium_host}:{selenium_port}/wd/hub"
     if args.verbose >= 1: print(f"Attempting to connect to selenium browser at URL = {url}")
     driver = webdriver.Remote(command_executor=url, options=op)
 
@@ -299,12 +299,12 @@ def savePriceEntire(driver, site_url, csv_dir):
         savePriceForCategory(driver, site_url, csv_dir, category_url, prod_id_set)
 
 
-def startScraping(selenium_host):
+def startScraping(selenium_host, selenium_port):
     flanco_url = os.environ.get("FLANCO_URL", "https://www.flanco.ro/")
     csv_dir = os.path.join(script_directory, CSV_DIR)
 
     print(f"Getting driver on host:{selenium_host}")
-    driver = getBrowserDriver(selenium_host)
+    driver = getBrowserDriver(selenium_host, selenium_port)
     print(f"Got driver on host:{selenium_host}")
     print()
 
@@ -337,7 +337,8 @@ if __name__ == "__main__":
     if args.verbose >= 1: print(args); print()
 
     selenium_host = os.environ.get("SELENIUM_HOST", "localhost")
-    waitForSeleniumContainer(selenium_host=selenium_host, timeout=WAIT_SELENIUM_TIMEOUT)
-    startScraping(selenium_host)
+    selenium_port = os.environ.get("SELENIUM_PORT", "4445")
+    waitForSeleniumContainer(selenium_host, selenium_port, timeout=WAIT_SELENIUM_TIMEOUT)
+    startScraping(selenium_host, selenium_port)
 
 

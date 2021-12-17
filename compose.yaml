@@ -13,6 +13,7 @@ services:
       - flanco_scrape:/app/shared_dir
     environment:
       - SELENIUM_HOST=selenium-chrome
+      - SELENIUM_PORT=4444
       - FLANCO_URL=https://www.flanco.ro/
     # entrypoint: ["python3", "/app/flanco_scrape.py", "-vv", "test"]
     # entrypoint: ["python3", "/app/flanco_scrape.py", "-v", "category", "tv-audio-video-foto/televizoare/smart-tv.html"]
