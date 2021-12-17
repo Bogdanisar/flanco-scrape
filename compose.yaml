@@ -14,6 +14,10 @@ services:
     environment:
       - SELENIUM_HOST=selenium-chrome
       - FLANCO_URL=https://www.flanco.ro/
-    entrypoint: ["python3", "/app/flanco_scrape.py", "-v", "category", "telefoane-tablete/smartphone/smartphone-android.html"]
+    # entrypoint: ["python3", "/app/flanco_scrape.py", "-vv", "test"]
+    # entrypoint: ["python3", "/app/flanco_scrape.py", "-v", "category", "tv-audio-video-foto/televizoare/smart-tv.html"]
+    # entrypoint: ["python3", "/app/flanco_scrape.py", "-v", "category", "electrocasnice-mari/aparate-frigorifice/combine-frigorifice.html"]
+    # entrypoint: ["python3", "/app/flanco_scrape.py", "-v", "-m", "100", "entire"]
+    entrypoint: ["python3", "/app/flanco_scrape.py", "-v", "entire"]
 volumes:
   flanco_scrape:

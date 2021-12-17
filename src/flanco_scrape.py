@@ -25,6 +25,11 @@ TEST_PRODUCT_IDS = [
 CSV_DIR = './shared_dir/flanco_csv/'
 WAIT_ELEMENT_TIMEOUT = 10 # seconds
 WAIT_SELENIUM_TIMEOUT = 10 # seconds
+CSV_ENTRY_LOG_INTERVAL = 200
+SUBPARSER_TEST = "test"
+SUBPARSER_LIST = "list"
+SUBPARSER_CATEGORY = "category"
+SUBPARSER_ENTIRE = "entire"
 
 class MaxCSVEntryReached(ValueError):
     pass
@@ -38,14 +43,16 @@ def getArgumentParser():
     subparsers = parser.add_subparsers(dest="subparser_name", help="The kind of run mode")
     subparsers.required = True
 
-    parser_test = subparsers.add_parser("test", 
+    parser_test = subparsers.add_parser(SUBPARSER_TEST, 
                                         help=f"Scrapes a short pre-defined list of product ids ({TEST_PRODUCT_IDS})")
 
-    parser_list = subparsers.add_parser("list", help="Give a list of product ids for which to scrape prices")
+    parser_list = subparsers.add_parser(SUBPARSER_LIST, help="Give a list of product ids for which to scrape prices")
     parser_list.add_argument("products", nargs="+", help="A list of product ids for which to scrape prices")
 
-    parser_category = subparsers.add_parser("category", help="Give a category of products (as URL relative to host) for which to scrape prices")
+    parser_category = subparsers.add_parser(SUBPARSER_CATEGORY, help="Give a category of products (as URL relative to host) for which to scrape prices")
     parser_category.add_argument("category_url", help="A category of products (as URL relative to host) for which to scrape prices")
+
+    parser_entire = subparsers.add_parser(SUBPARSER_ENTIRE, help="Attempt to parse all products (up to the number of max-entries, if specified)")
     
     return parser
 
@@ -94,6 +101,8 @@ def findElement(top, cssSelector):
         return element
     except selenium.common.exceptions.NoSuchElementException:
         pass
+    except selenium.common.exceptions.StaleElementReferenceException:
+        print("Skipping stale element in find...")
     except:
         print("Got unexpected error while trying to find element based on css_selector:", sys.exc_info())
     
@@ -111,8 +120,11 @@ def getPricesFromPriceBox(priceBox):
             unreduced_price = priceBox.find_element(By.CSS_SELECTOR, css[0])
             curr_price = priceBox.find_element(By.CSS_SELECTOR, css[1])
             return (unreduced_price, curr_price)
-        except:
+        except selenium.common.exceptions.NoSuchElementException:
             continue
+        except:
+            print("Got unexpected error while getting prices:", sys.exc_info())
+            raise
     
     return None
 
@@ -121,11 +133,18 @@ def waitForElement(driver, cssSelector):
         WebDriverWait(driver, WAIT_ELEMENT_TIMEOUT).until(lambda driver: findElement(driver, cssSelector) is not None)
     except selenium.common.exceptions.TimeoutException:
         raise ValueError(f"Timed-out while waiting for element with css-selector: {cssSelector}")
+    
+def waitForDocumentLoad(driver):
+    try:
+        condition = 'document.readyState == "complete"'
+        documentIsLoaded = lambda driver: driver.execute_script(f"return {condition};")
+        WebDriverWait(driver, WAIT_ELEMENT_TIMEOUT).until(documentIsLoaded)
+    except selenium.common.exceptions.TimeoutException:
+        raise ValueError(f"Timed-out while waiting for ({condition})")
 
 def addPriceEntryToCSV(csv_dir, prod_id, unreduced_price, curr_price, prod_url):
     if args.max_entries is not None and addPriceEntryToCSV.count >= args.max_entries:
         raise MaxCSVEntryReached(f"Already reached maximum amount of CSV entries({args.max_entries})")
-    addPriceEntryToCSV.count = addPriceEntryToCSV.count + 1
 
     curr_date = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
 
@@ -140,7 +159,14 @@ def addPriceEntryToCSV(csv_dir, prod_id, unreduced_price, curr_price, prod_url):
     with open(os.path.join(csv_dir, f"product{prod_id}.csv"), mode='a') as csv_file:
         price_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         price_writer.writerow([str(prod_id), curr_date, unreduced_price, curr_price, prod_url])
+
+    addPriceEntryToCSV.count = addPriceEntryToCSV.count + 1
+    if addPriceEntryToCSV.count - addPriceEntryToCSV.lastLogAt >= CSV_ENTRY_LOG_INTERVAL:
+        print(f"Added {addPriceEntryToCSV.count} CSV entries so far")
+        addPriceEntryToCSV.lastLogAt = addPriceEntryToCSV.count
+
 addPriceEntryToCSV.count = 0
+addPriceEntryToCSV.lastLogAt = 0
 
 def savePriceForList(driver, site_url, csv_dir, product_ids):
     driver.get(site_url)
@@ -154,6 +180,7 @@ def savePriceForList(driver, site_url, csv_dir, product_ids):
 
         # get product price
         price_box_css = "div.product-info-price div.price-box"
+        waitForDocumentLoad(driver)
         waitForElement(driver, price_box_css)
 
         priceBox = findElement(driver, price_box_css)
@@ -169,55 +196,108 @@ def savePriceForList(driver, site_url, csv_dir, product_ids):
         # write to CSV
         addPriceEntryToCSV(csv_dir, prod_id, unreduced_price, curr_price, driver.current_url)
 
-def savePriceForCategory(driver, site_url, csv_dir, category_url):
-    url = urllib.parse.urljoin(site_url, category_url)
-    if args.verbose >= 1: print(f"Scraping category at {url}")
-    driver.get(url)
+def savePriceForCategory(driver, site_url, csv_dir, category_url, prod_id_set = None):
+    driver.get(category_url)
+    if args.verbose >= 1: print(f"Scraping category at {category_url}")
     
+    skipAmount = 0
     pageNumber = 1
     while True:
         product_box_css = "li.product-item"
-        waitForElement(driver, product_box_css)
+        waitForDocumentLoad(driver)
+        try:
+            waitForElement(driver, product_box_css)
+        except ValueError:
+            print("Couldn't find any product_box_css on page. Move to next category...")
+            break
 
         product_boxes = driver.find_elements(By.CSS_SELECTOR, product_box_css)
         if args.verbose >= 1: print(f"Found {len(product_boxes)} products on page {pageNumber}")
-        
-        print()
+        if args.verbose >= 2: print()
+
         for prod_box in product_boxes:
 
-            # get product id
-            prod_id_html_attribute = "data-product-sku"
-            prod_id_element = prod_box.find_element(By.CSS_SELECTOR, f"*[{prod_id_html_attribute}]")
-            assert prod_id_element is not None
-            prod_id = prod_id_element.get_attribute(prod_id_html_attribute)
+            try:
+                # get product id
+                prod_id_html_attribute = "data-product-sku"
+                prod_id_element = prod_box.find_element(By.CSS_SELECTOR, f"*[{prod_id_html_attribute}]")
+                assert prod_id_element is not None
+                prod_id = prod_id_element.get_attribute(prod_id_html_attribute)
 
-            # get price
-            price_box_css = "div.price-box"
-            priceBox = findElement(prod_box, price_box_css)
-            assert priceBox is not None
+                if prod_id_set is not None and prod_id in prod_id_set:
+                    skipAmount += 1
+                    continue
 
-            priceTuple = getPricesFromPriceBox(priceBox)
-            assert priceTuple is not None
+                # get price
+                price_box_css = "div.price-box"
+                priceBox = findElement(prod_box, price_box_css)
+                assert priceBox is not None
 
-            unreduced_price = priceTuple[0].text
-            unreduced_price = ''.join(c for c in unreduced_price if c.isdigit() or c in [',', '.'])
-            curr_price = priceTuple[1].text
-            curr_price = ''.join(c for c in curr_price if c.isdigit() or c in [',', '.'])
+                priceTuple = getPricesFromPriceBox(priceBox)
+                assert priceTuple is not None
 
-            # get product url
-            anchor = findElement(prod_box, "a.product-item-link")
-            assert anchor is not None
-            prod_url = anchor.get_attribute("href");
+                unreduced_price = priceTuple[0].text
+                unreduced_price = ''.join(c for c in unreduced_price if c.isdigit() or c in [',', '.'])
+                curr_price = priceTuple[1].text
+                curr_price = ''.join(c for c in curr_price if c.isdigit() or c in [',', '.'])
 
-            # write to CSV
-            addPriceEntryToCSV(csv_dir, prod_id, unreduced_price, curr_price, prod_url)
+                # get product url
+                anchor = findElement(prod_box, "a.product-item-link")
+                assert anchor is not None
+                prod_url = anchor.get_attribute("href")
 
-        nextButton = findElement(driver, "a.action.next:not(.mobile-filter-container a)")
-        if nextButton is None:
+                # write to CSV
+                addPriceEntryToCSV(csv_dir, prod_id, unreduced_price, curr_price, prod_url)
+
+                # remember the id
+                prod_id_set.add(prod_id)
+
+            except selenium.common.exceptions.StaleElementReferenceException:
+                if 'prod_id' not in locals():
+                    prod_id = "N/A"
+                print(f"Skipping stale element: Product ID is {prod_id} ...")
+            except MaxCSVEntryReached:
+                raise
+            except:
+                if 'prod_id' not in locals():
+                    prod_id = "N/A"
+                print(f"Got exception for Product ID {prod_id}: {sys.exc_info()}")
+
+        try:
+            nextButton = findElement(driver, "a.action.next:not(.mobile-filter-container a)")
+            if nextButton is None:
+                break
+            
+            driver.execute_script("arguments[0].click();", nextButton)
+            pageNumber = pageNumber + 1
+        except selenium.common.exceptions.StaleElementReferenceException:
+            print("Next button was stale. Going to the next category...\n")
             break
-        
-        driver.execute_script("arguments[0].click();", nextButton)
-        pageNumber = pageNumber + 1
+        except:
+            print("Unexpected error with 'Next' button:", sys.exc_info())
+    
+    if args.verbose >= 1: print(f"Skipped {skipAmount} known products in this category"); print()
+
+def savePriceEntire(driver, site_url, csv_dir):
+    driver.get(site_url)
+    if args.verbose >= 1: print(f"Starting scraping {site_url}")
+
+
+    category_anchors_css = "div.heromenu div.heromenu-content div.heromenu-content-category-wrapper div.heromenu-content-category-list li a"
+    waitForDocumentLoad(driver)
+    waitForElement(driver, category_anchors_css)
+    category_anchors = driver.find_elements(By.CSS_SELECTOR, category_anchors_css)
+
+    if args.verbose >= 1: print(f"Found {len(category_anchors)} categories"); print()
+
+    category_url_list = []
+    for anchor in category_anchors:
+        category_url_list.append(anchor.get_attribute("href"))
+    
+    prod_id_set = set()
+    for category_url in category_url_list:
+        savePriceForCategory(driver, site_url, csv_dir, category_url, prod_id_set)
+
 
 def startScraping(selenium_host):
     flanco_url = os.environ.get("FLANCO_URL", "https://www.flanco.ro/")
@@ -232,12 +312,17 @@ def startScraping(selenium_host):
         if not os.path.exists(csv_dir):
             os.mkdir(csv_dir)
 
-        if args.subparser_name == "test":
+        if args.subparser_name == SUBPARSER_TEST:
             savePriceForList(driver, flanco_url, csv_dir, TEST_PRODUCT_IDS)
-        elif args.subparser_name == "list":
+        elif args.subparser_name == SUBPARSER_LIST:
             savePriceForList(driver, flanco_url, csv_dir, args.products)
-        elif args.subparser_name == "category":
-            savePriceForCategory(driver, flanco_url, csv_dir, args.category_url)
+        elif args.subparser_name == SUBPARSER_CATEGORY:
+            category_url = urllib.parse.urljoin(flanco_url, args.category_url)
+            savePriceForCategory(driver, flanco_url, csv_dir, category_url, set())
+        elif args.subparser_name == SUBPARSER_ENTIRE:
+            savePriceEntire(driver, flanco_url, csv_dir)
+        else:
+            assert False
     except MaxCSVEntryReached as e:
         print("Stopping because:", str(e))
     finally:
