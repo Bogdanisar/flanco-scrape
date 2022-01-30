@@ -1,8 +1,12 @@
+#!/usr/bin/env python3
+
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.utils import ChromeType
 import selenium.common.exceptions
 
 import time
@@ -18,9 +22,9 @@ import urllib.parse
 
 
 TEST_PRODUCT_IDS = [
-    '147719', # Trotineta electrica Blaupunkt
-    '143800', # Combina frigorifica Arctic
-    '144043', # Combina frigorifica Beko
+    '132160', # Trotineta electrica Blaupunkt
+    '143196', # Combina frigorifica Arctic
+    '143221', # Combina frigorifica Beko
 ]
 CSV_DIR = './shared_dir/flanco_csv/'
 WAIT_ELEMENT_TIMEOUT = 10 # seconds
@@ -36,14 +40,22 @@ class MaxCSVEntryReached(ValueError):
 
 
 def getArgumentParser():
-    parser = argparse.ArgumentParser(description='Start scraping Flanco in one of a few modes of operation')
+    parser = argparse.ArgumentParser(description='Start scraping Flanco in one of a few modes of operation.')
     parser.add_argument("--verbose", "-v", action='count', default=0)
-    parser.add_argument("--max-entries", "-m", action="store", type=int, help="The maximum amount of CSV entries that this script will write before exiting")
+    parser.add_argument("--max-entries", "-m",
+                        action="store",
+                        type=int,
+                        help="The maximum amount of CSV entries that this script will write before exiting")
+    parser.add_argument("--run-locally", "-l",
+                        action="store_true",
+                        dest="runLocally",
+                        help="By default the script connects to a Selenium instance running in a docker container."
+                             "Enable this to run the script with the Chrome browser of the host machine using a GUI (no docker)")
 
     subparsers = parser.add_subparsers(dest="subparser_name", help="The kind of run mode")
     subparsers.required = True
 
-    parser_test = subparsers.add_parser(SUBPARSER_TEST, 
+    parser_test = subparsers.add_parser(SUBPARSER_TEST,
                                         help=f"Scrapes a short pre-defined list of product ids ({TEST_PRODUCT_IDS})")
 
     parser_list = subparsers.add_parser(SUBPARSER_LIST, help="Give a list of product ids for which to scrape prices")
@@ -53,7 +65,7 @@ def getArgumentParser():
     parser_category.add_argument("category_url", help="A category of products (as URL relative to host) for which to scrape prices")
 
     parser_entire = subparsers.add_parser(SUBPARSER_ENTIRE, help="Attempt to parse all products (up to the number of max-entries, if specified)")
-    
+
     return parser
 
 
@@ -70,28 +82,42 @@ def wait_until(condition, *args, interval=0.1, timeout=1):
         if condition(*args):
             return True
         time.sleep(interval)
-    
+
     return False
 
 def waitForSeleniumContainer(selenium_host, selenium_port, timeout):
-    print(f"Waiting for selenium host: {selenium_host} for {timeout} seconds...")
+    print(f"Waiting for selenium host: {selenium_host}:{selenium_port} for {timeout} seconds...")
     if not wait_until(is_selenium_container_ready, selenium_host, selenium_port, timeout=timeout):
-        print(f"Timed-out after {timeout} seconds while waiting for host({selenium_host}). Abort...")
+        print(f"Timed-out after {timeout} seconds while waiting for host({selenium_host}:{selenium_port}). Abort...")
         sys.exit(-1)
-    print(f"Host({selenium_host}) is up!")
+    print(f"Host({selenium_host}:{selenium_port}) is up!")
     print()
 
 
 def getBrowserDriver(selenium_host, selenium_port):
-    op = webdriver.ChromeOptions()
-    op.add_argument('--no-sandbox')
-    op.add_argument('--disable-dev-shm-usage')
-    op.add_argument("--headless") # run without GUI
-    op.add_argument('--blink-settings=imagesEnabled=false') # don't load images
 
-    url = f"http://{selenium_host}:{selenium_port}/wd/hub"
-    if args.verbose >= 1: print(f"Attempting to connect to selenium browser at URL = {url}")
-    driver = webdriver.Remote(command_executor=url, options=op)
+    if args.runLocally:
+        op = webdriver.ChromeOptions()
+        op.add_argument('--no-sandbox')
+        op.add_argument('--disable-dev-shm-usage')
+
+        if args.verbose >= 1:
+            print(f"Attempting to start host Chrome browser with Selenium")
+
+        service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
+        driver = webdriver.Chrome(service=service,
+                                  service_log_path=os.path.join(os.getcwd(), "browser_service_log.txt"),
+                                  options=op)
+    else:
+        op = webdriver.ChromeOptions()
+        op.add_argument('--no-sandbox')
+        op.add_argument('--disable-dev-shm-usage')
+        op.add_argument("--headless") # run without GUI
+        op.add_argument('--blink-settings=imagesEnabled=false') # don't load images
+
+        url = f"http://{selenium_host}:{selenium_port}/wd/hub"
+        if args.verbose >= 1: print(f"Attempting to connect to Selenium container at URL = {url}")
+        driver = webdriver.Remote(command_executor=url, options=op)
 
     return driver
 
@@ -103,9 +129,9 @@ def findElement(top, cssSelector):
         pass
     except selenium.common.exceptions.StaleElementReferenceException:
         print("Skipping stale element in find...")
-    except:
-        print("Got unexpected error while trying to find element based on css_selector:", sys.exc_info())
-    
+    except Exception as e:
+        print("Got unexpected error while trying to find element based on css_selector:", e)
+
     return None
 
 def getPricesFromPriceBox(priceBox):
@@ -125,7 +151,7 @@ def getPricesFromPriceBox(priceBox):
         except:
             print("Got unexpected error while getting prices:", sys.exc_info())
             raise
-    
+
     return None
 
 def waitForElement(driver, cssSelector):
@@ -133,7 +159,7 @@ def waitForElement(driver, cssSelector):
         WebDriverWait(driver, WAIT_ELEMENT_TIMEOUT).until(lambda driver: findElement(driver, cssSelector) is not None)
     except selenium.common.exceptions.TimeoutException:
         raise ValueError(f"Timed-out while waiting for element with css-selector: {cssSelector}")
-    
+
 def waitForDocumentLoad(driver):
     try:
         condition = 'document.readyState == "complete"'
@@ -199,7 +225,7 @@ def savePriceForList(driver, site_url, csv_dir, product_ids):
 def savePriceForCategory(driver, site_url, csv_dir, category_url, prod_id_set = None):
     driver.get(category_url)
     if args.verbose >= 1: print(f"Scraping category at {category_url}")
-    
+
     skipAmount = 0
     pageNumber = 1
     while True:
@@ -267,7 +293,7 @@ def savePriceForCategory(driver, site_url, csv_dir, category_url, prod_id_set = 
             nextButton = findElement(driver, "a.action.next:not(.mobile-filter-container a)")
             if nextButton is None:
                 break
-            
+
             driver.execute_script("arguments[0].click();", nextButton)
             pageNumber = pageNumber + 1
         except selenium.common.exceptions.StaleElementReferenceException:
@@ -275,7 +301,7 @@ def savePriceForCategory(driver, site_url, csv_dir, category_url, prod_id_set = 
             break
         except:
             print("Unexpected error with 'Next' button:", sys.exc_info())
-    
+
     if args.verbose >= 1: print(f"Skipped {skipAmount} known products in this category"); print()
 
 def savePriceEntire(driver, site_url, csv_dir):
@@ -293,7 +319,7 @@ def savePriceEntire(driver, site_url, csv_dir):
     category_url_list = []
     for anchor in category_anchors:
         category_url_list.append(anchor.get_attribute("href"))
-    
+
     prod_id_set = set()
     for category_url in category_url_list:
         savePriceForCategory(driver, site_url, csv_dir, category_url, prod_id_set)
@@ -303,9 +329,9 @@ def startScraping(selenium_host, selenium_port):
     flanco_url = os.environ.get("FLANCO_URL", "https://www.flanco.ro/")
     csv_dir = os.path.join(script_directory, CSV_DIR)
 
-    print(f"Getting driver on host:{selenium_host}")
+    print(f"Getting selenium driver on {selenium_host}:{selenium_port}")
     driver = getBrowserDriver(selenium_host, selenium_port)
-    print(f"Got driver on host:{selenium_host}")
+    print(f"Got selenium driver on {selenium_host}:{selenium_port}")
     print()
 
     try:

@@ -3,10 +3,8 @@ FROM ubuntu:20.04
 RUN apt-get update
 
 # get dependencies
-RUN apt install python3-pip cron -y
-RUN apt install python-is-python3 -y
-RUN pip install selenium --upgrade
-RUN pip install requests --upgrade
+RUN apt install python3-pip python-is-python3 -y && \
+    pip install selenium requests webdriver-manager --upgrade
 
 # copy project files
 COPY ./src /app
